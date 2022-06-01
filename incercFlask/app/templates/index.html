@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<head>
+    <title>ChatRoom</title>
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
+        <script type="text/javascript" src="//cdn.socket.io/4.4.1/socket.io.min.js"></script>
+        <script type="text/javascript" charset="utf-8">
+            var socket;
+            $(document).ready(function(){
+                socket = io.connect('http://' + document.domain + ':' + location.port );
+                socket.on('connect', function() {
+                    socket.emit('joined', {});
+                });
+                socket.on('status', function(data) {
+                    $('#chat').val($('#chat').val() + '<' + data.msg + '>\n');
+                    $('#chat').scrollTop($('#chat')[0].scrollHeight);
+                });
+                socket.on('message', function(data) {
+                    $('#chat').val($('#chat').val() + data.msg + '\n');
+                    $('#chat').scrollTop($('#chat')[0].scrollHeight);
+                });
+                $('#introdu').keypress(function(e) {
+                    var code = e.keyCode || e.which;
+                    if (code == 13) {
+                        text = $('#introdu').val();
+                        $('#introdu').val('');
+                        socket.emit('text', {msg: text});
+                    }
+                });
+            });
+            function leave_room() {
+                socket.emit('left', {}, function() {
+                    socket.disconnect();
+
+                });
+            }
+        </script>
+</head>
+<body>
+    <header></header>
+    <main>
+        <h1 style="margin-left:25px; margin-top:100px;">Chatroom</h1>
+        <textarea id="chat" style="margin-left:20px; border:thin solid black; width:700px; height:350px;"></textarea><br>
+        <label style="margin-left:20px;" for="introdu">Introdu un mesaj:</label><br>
+        <input style="margin-left:20px;" type="text" id="introdu" name="introdu">
+        <button type="button">Trimite!</button>
+    </main>
+</body>
